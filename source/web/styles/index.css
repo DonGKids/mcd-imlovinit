@@ -9,6 +9,12 @@
     height: 100%;
   }
 
+  /* 锁死 body 滚动：由 main / IntroPages 内部自己滚动 */
+  html,
+  body {
+    overflow: hidden;
+  }
+
   body {
     @apply bg-mcd-cream text-gray-900 antialiased;
     font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;

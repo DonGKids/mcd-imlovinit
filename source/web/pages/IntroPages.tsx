@@ -67,7 +67,7 @@ export default function IntroPages() {
   return (
     <div
       ref={containerRef}
-      className="h-screen w-full overflow-y-scroll snap-y snap-mandatory bg-mcd-cream"
+      className="fixed inset-0 w-full overflow-y-scroll snap-y snap-mandatory bg-mcd-cream z-0"
     >
       {/* Section 1: Hero */}
       <section className="h-screen w-full snap-start flex items-center justify-center px-6 relative overflow-hidden">
