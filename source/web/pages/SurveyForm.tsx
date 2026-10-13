@@ -29,6 +29,33 @@ export default function SurveyForm() {
   const [mealTime, setMealTime] = useState<MealTime>('auto');
   const [moodText, setMoodText] = useState('');
 
+  // 附近门店定位
+  const [address, setAddress] = useState('');
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locationMsg, setLocationMsg] = useState<string | null>(null);
+
+  function handleUseMyLocation() {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setLocationMsg('当前浏览器不支持定位，请手动输入地址');
+      return;
+    }
+    setLocating(true);
+    setLocationMsg(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocating(false);
+        setLocationMsg(`✅ 已获取定位（精度 ${Math.round(pos.coords.accuracy)}m）`);
+      },
+      (err) => {
+        setLocating(false);
+        setLocationMsg(`定位失败：${err.message || '用户拒绝或无信号'}，可手动输入地址`);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  }
+
   function handleRecommend() {
     navigate('/result', {
       state: {
@@ -39,6 +66,9 @@ export default function SurveyForm() {
         healthFocus,
         mealTime,
         moodText,
+        address: address.trim() || undefined,
+        lat: coords?.lat,
+        lng: coords?.lng,
       },
     });
   }
@@ -117,6 +147,52 @@ export default function SurveyForm() {
           onChange={setMoodText}
           placeholder="比如：今天加班到深夜，想吃点治愈的、又不想太胖..."
         />
+
+        {/* 附近门店定位（可选） */}
+        <div className="space-y-3 pt-2 border-t border-dashed border-gray-200">
+          <div className="flex items-baseline justify-between">
+            <label className="text-base sm:text-lg font-semibold text-gray-800">
+              7. 你在哪？（可选）
+            </label>
+            <span className="text-xs text-gray-500">推荐附近 3 家麦当劳</span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="例如：北京市朝阳区三里屯 / 上海市南京东路"
+              className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-mcd-red focus:outline-none text-sm sm:text-base bg-white"
+            />
+            <button
+              type="button"
+              onClick={handleUseMyLocation}
+              disabled={locating}
+              className="mcd-button-secondary whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {locating ? '📡 定位中…' : '📍 使用我的位置'}
+            </button>
+          </div>
+
+          {locationMsg && (
+            <p
+              className={`text-xs ${locationMsg.startsWith('✅') ? 'text-green-600' : 'text-amber-600'}`}
+            >
+              {locationMsg}
+            </p>
+          )}
+
+          {coords && (
+            <p className="text-xs text-gray-500">
+              已记录坐标：{coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+            </p>
+          )}
+
+          <p className="text-xs text-gray-400">
+            支持城市：北京 / 上海 / 广州 / 深圳 / 杭州 / 成都（按地址关键词匹配）
+          </p>
+        </div>
       </section>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">

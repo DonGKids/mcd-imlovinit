@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 
 import recommendRouter from './routes/recommend';
 import catalogRouter from './routes/catalog';
+import storesRouter from './routes/stores';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/recommend', recommendRouter);
 app.use('/api/catalog', catalogRouter);
+app.use('/api/stores', storesRouter);
 
 // 全局错误处理
 app.use((err: any, _req: any, res: any, _next: any) => {

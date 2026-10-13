@@ -20,6 +20,7 @@
 - 💬 **自由文本心情解析**：用自然语言说出你的心情（"被甲方折磨了"、"加班到深夜"），系统自动理解并匹配餐品
 - 🏷️ **8 维标签系统**：每个餐品被打上 类别/餐期/口味/年龄适配/职业适配/营养属性/心情适配/主料 8 个维度
 - ✅ **解释性推荐**：每条推荐都告诉你**为什么**——不只是冷冰冰的分数
+- 📍 **附近门店推荐**：可选输入地址 / 一键定位，给出距离最近的 3 家麦当劳 + 步行/驾车时长
 - 🎨 **品牌化 UI**：麦当劳红黄配色，响应式设计，支持手机/平板/桌面
 
 数据来源：麦当劳官方营养信息表（通过 `mcp__mcd-mcp__list-nutrition-foods` MCP 接口获取）。
@@ -39,6 +40,7 @@
 | 🤰 **孕妈** | 营养补充、清淡 | 自动适配清淡 + 高钙 + 低钠（粥、豆浆、热牛奶） |
 | 👴 **退休人士** | 养胃、清淡、低负担 | 自动过滤到低钠、高钙、易消化组合 |
 | 👶 **儿童** | 零食、甜品 | 儿童专属筛选（鱼排堡、迷你薯条、新地） |
+| 🚶 **临时到访者 / 商务出差** | 不知道附近哪家最近 | 输入当前位置，一键给出 3 家最近门店 + 步行/驾车时长 |
 
 ---
 
@@ -151,7 +153,7 @@ LOG_LEVEL=info
 2. 🍓 **草莓新地** — 245 kcal
 3. 🥛 **纯牛奶（盒装）** — 129 kcal
 
-### 示例 5：直接调用 API
+### 示例 5：直接调用推荐 API
 
 ```bash
 curl -X POST http://localhost:4000/api/recommend \
@@ -170,6 +172,22 @@ curl -X POST http://localhost:4000/api/recommend \
 
 返回结构详见 `MCP_USAGE.md` 中的"完整 API 契约"。
 
+### 示例 6：附近门店推荐
+
+**操作**：在问卷第 7 题"你在哪？"输入 *"上海市南京东路"*（或点击"📍 使用我的位置"调用浏览器定位）
+
+**推荐结果（结果页底部）**：
+1. 🥇 麦当劳南京东路店 — 0.9 km · 🚶 11 分钟 / 🚗 2 分钟
+2. 🥈 麦当劳陆家嘴店 — 0.9 km · 🚶 11 分钟 / 🚗 2 分钟
+3. 🥉 麦当劳徐家汇美罗城店 — 6.9 km · 🚶 82 分钟 / 🚗 14 分钟
+
+**API 调用**：
+```bash
+curl -X POST http://localhost:4000/api/stores/nearby \
+  -H "Content-Type: application/json" \
+  -d '{ "address": "上海市南京东路", "limit": 3 }'
+```
+
 ---
 
 ## 📂 项目结构
@@ -183,10 +201,12 @@ mcd-imlovinit/
     │   ├── server.ts           入口
     │   ├── routes/
     │   │   ├── recommend.ts    POST /api/recommend
-    │   │   └── catalog.ts      GET /api/catalog
+    │   │   ├── catalog.ts      GET  /api/catalog
+    │   │   └── stores.ts       POST /api/stores/nearby 附近门店
     │   ├── services/
     │   │   ├── recommend.ts    6 维加权推荐算法核心
-    │   │   └── catalog.ts      餐品目录加载 (含 data 路径解析)
+    │   │   ├── catalog.ts      餐品目录加载 (含 data 路径解析)
+    │   │   └── stores.ts       门店匹配 + Haversine 距离计算
     │   ├── utils/
     │   │   └── tagMaps.ts      口味/心情/职业关键词映射表
     │   ├── types/
@@ -196,15 +216,15 @@ mcd-imlovinit/
     │   └── vercel.json         Vercel serverless 部署配置
     ├── web/             ← Vite + React 18 + TS + Tailwind 前端
     │   ├── main.tsx            入口
-    │   ├── App.tsx             路由 (Home → Result)
+    │   ├── App.tsx             路由 (Home → Survey → Result)
     │   ├── pages/
-    │   │   ├── Home.tsx        6 维问卷
-    │   │   └── Result.tsx      推荐结果展示
+    │   │   ├── Home.tsx        5 屏 scroll-snap 介绍页
+    │   │   ├── SurveyForm.tsx  6 维问卷 + 地址输入 + 浏览器定位
+    │   │   └── Result.tsx      推荐结果 + 附近门店展示
     │   ├── components/
-    │   │   ├── Header.tsx
     │   │   ├── OptionPills.tsx 选项胶囊 + 自由文本输入
     │   │   └── MealCard.tsx    餐品卡片 (营养+标签+理由)
-    │   ├── api/recommend.ts    后端 API 封装
+    │   ├── api/recommend.ts    后端 API 封装 (推荐 + 附近门店)
     │   ├── utils/options.ts    所有维度的选项定义
     │   ├── types/index.ts
     │   ├── styles/index.css    Tailwind + 全局样式
@@ -215,9 +235,10 @@ mcd-imlovinit/
     │   ├── tsconfig.json
     │   ├── vite.config.ts      含 /api 代理到后端
     │   └── vercel.json
-    └── data/            ← 营养数据 + 标签数据 (JSON)
+    └── data/            ← 营养数据 + 标签数据 + 门店数据 (JSON)
         ├── meals-nutrition.json    160 道餐品的卡路里/蛋白/脂肪/碳水/钠/钙
-        └── meals-tags.json         160 道餐品的 8 维标签
+        ├── meals-tags.json         160 道餐品的 8 维标签
+        └── stores.json             6 城 28 家麦当劳虚拟门店 + 城市中心坐标
 ```
 
 辅助文件（不在 `source/` 内）：
@@ -363,6 +384,44 @@ mcd-imlovinit/
 - `GET /api/meals` — 仅营养数据
 - `GET /api/tags` — 仅标签字典
 - `GET /api/health` — 健康检查
+- `POST /api/stores/nearby` — 附近门店推荐
+
+### `POST /api/stores/nearby`
+
+**Request**:
+```json
+{
+  "address": "北京市朝阳区三里屯",   // 必填: 任意含城市关键词的地址
+  "lat": 39.9388,                    // 可选: 浏览器定位坐标
+  "lng": 116.4554,                   // 可选: 浏览器定位坐标
+  "limit": 3                         // 可选: 返回门店数量, 默认 3
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "city": "北京",
+  "stores": [
+    {
+      "id": "BJ001",
+      "name": "麦当劳王府井大街店",
+      "address": "北京市东城区王府井大街138号",
+      "lat": 39.9139,
+      "lng": 116.4106,
+      "city": "北京",
+      "distance": 1.1,
+      "walkMinutes": 13,
+      "driveMinutes": 2
+    }
+  ]
+}
+```
+
+**算法**：地址关键词匹配城市 → 列出该城市所有门店 → 用 Haversine 公式计算直线距离（地球半径 6371 km）→ 步行 5 km/h、驾车 30 km/h 估算时长 → 按距离升序取前 N。
+
+**已支持城市**：北京 / 上海 / 广州 / 深圳 / 杭州 / 成都（每城收录 4-5 家虚拟门店用作演示）。
 
 ---
 
