@@ -19,6 +19,7 @@ export interface NearbyStore extends Store {
 interface StoresData {
   cities: Record<string, Store[]>;
   cityCenter: Record<string, { lat: number; lng: number }>;
+  cityAliases: Record<string, string>;
 }
 
 let cachedData: StoresData | null = null;
@@ -34,17 +35,32 @@ function loadData(): StoresData {
 
 /**
  * 从地址字符串解析城市
- * 支持：'北京市朝阳区三里屯'、'上海徐家汇'、'杭州' 等
+ * 支持：城市名 / 城市别名（如"帝都"→"北京"、"魔都"→"上海"、"羊城"→"广州"）
+ * 匹配规则：先按出现位置，再按名字长度（更长的城市名优先，避免"北京"先于"朝阳区"匹配）
  */
 function parseCity(address: string): string | null {
   if (!address) return null;
-  const cities = Object.keys(loadData().cities);
-  // 按城市名长度倒序匹配，避免"北京市"先匹配但实际是"北京"
-  const sortedCities = [...cities].sort((a, b) => b.length - a.length);
-  for (const city of sortedCities) {
-    if (address.includes(city)) return city;
+  const data = loadData();
+  const cities = Object.keys(data.cities);
+  const aliases = Object.entries(data.cityAliases || {}); // [alias, cityName][]
+
+  type Candidate = { name: string; index: number; length: number };
+  const candidates: Candidate[] = [];
+
+  for (const city of cities) {
+    const idx = address.indexOf(city);
+    if (idx >= 0) candidates.push({ name: city, index: idx, length: city.length });
   }
-  return null;
+  for (const [alias, city] of aliases) {
+    const idx = address.indexOf(alias);
+    if (idx >= 0) candidates.push({ name: city, index: idx, length: alias.length });
+  }
+
+  if (candidates.length === 0) return null;
+
+  // 排序：先按出现位置（越靠前越好），再按名字长度（越长越好）
+  candidates.sort((a, b) => a.index - b.index || b.length - a.length);
+  return candidates[0].name;
 }
 
 /**
@@ -78,7 +94,31 @@ function estimateMinutes(distanceKm: number): { walk: number; drive: number } {
 }
 
 /**
+ * 名称/地标关键词匹配得分
+ * 用于在用户输入里直接出现门店名/地标名时把对应门店排前
+ *   - 全名匹配（含"新街口"→"麦当劳新街口店"）：+1000 分
+ *   - 2 字子串匹配：+100 分
+ *   - 否则：0 分
+ */
+function nameMatchScore(storeName: string, userInput: string): number {
+  if (!userInput) return 0;
+  // 去掉"麦当劳"前缀和"店"后缀
+  const cleaned = storeName.replace(/^麦当劳/, '').replace(/店$/, '').trim();
+  if (!cleaned || cleaned.length < 2) return 0;
+  if (userInput.includes(cleaned)) return 1000;
+  // 2-3 字滑动窗口
+  for (let len = Math.min(3, cleaned.length); len >= 2; len--) {
+    for (let i = 0; i <= cleaned.length - len; i++) {
+      const sub = cleaned.substring(i, i + len);
+      if (userInput.includes(sub)) return 100;
+    }
+  }
+  return 0;
+}
+
+/**
  * 根据用户地址（+ 可选经纬度）查找最近门店
+ * 排序优先级：名称/地标匹配分（高→低）→ 距离（低→高）
  */
 export function findNearbyStores(
   address: string,
@@ -102,16 +142,26 @@ export function findNearbyStores(
   const nearby: NearbyStore[] = cityStores.map((store) => {
     const distance = haversineDistance(baseLat, baseLng, store.lat, store.lng);
     const { walk, drive } = estimateMinutes(distance);
+    const boost = nameMatchScore(store.name, address);
     return {
       ...store,
       city,
       distance: Math.round(distance * 10) / 10, // 保留 1 位小数
       walkMinutes: walk,
       driveMinutes: drive,
+      _boost: boost, // 排序用，前端不返回
     };
   });
 
-  nearby.sort((a, b) => a.distance - b.distance);
+  // 排序：先按名称/地标匹配分（降序），再按距离（升序）
+  nearby.sort((a, b) => (b as any)._boost - (a as any)._boost || a.distance - b.distance);
 
-  return { city, stores: nearby.slice(0, limit) };
+  // 去掉内部字段
+  return {
+    city,
+    stores: nearby.slice(0, limit).map((s) => {
+      const { _boost, ...rest } = s as any;
+      return rest;
+    }),
+  };
 }
