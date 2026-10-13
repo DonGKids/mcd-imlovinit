@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: mcd-imlovinit-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: FRONTEND_ORIGIN
+        sync: false
+    autoDeploy: true

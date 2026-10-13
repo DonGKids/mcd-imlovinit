@@ -8,3 +8,6 @@ build/
 .DS_Store
 .vite/
 *.tsbuildinfo
+
+# WorkBuddy memory (不进入 git)
+.workbuddy/

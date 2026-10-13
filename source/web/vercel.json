@@ -1,0 +1,14 @@
+{
+  "buildCommand": "cd ../frontend && npm install && npm run build",
+  "outputDirectory": "../frontend/dist",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "env": {
+    "VITE_API_BASE": "@api_base_url"
+  }
+}
