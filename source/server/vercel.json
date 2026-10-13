@@ -2,7 +2,7 @@
   "version": 1,
   "builds": [
     {
-      "src": "backend/src/server.ts",
+      "src": "server.ts",
       "use": "@vercel/node",
       "config": {
         "maxDuration": 10
@@ -12,7 +12,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/src/server.ts"
+      "dest": "server.ts"
     }
   ],
   "env": {

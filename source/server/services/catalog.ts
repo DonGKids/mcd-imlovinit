@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { MealItem, MealTags } from '../types';
 
-const DATA_DIR = join(__dirname, '..', '..', '..', 'data');
+const DATA_DIR = join(__dirname, '..', '..', 'data');
 
 let cachedMeals: MealItem[] | null = null;
 let cachedTags: Record<string, MealTags> | null = null;

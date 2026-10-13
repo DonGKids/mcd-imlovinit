@@ -2,7 +2,7 @@ services:
   - type: web
     name: mcd-imlovinit-api
     runtime: node
-    rootDir: backend
+    rootDir: source/server
     plan: free
     buildCommand: npm install && npm run build
     startCommand: npm start

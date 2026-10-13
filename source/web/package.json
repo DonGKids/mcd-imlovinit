@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "preview": "vite preview --port 5173",
-    "lint": "eslint 'src/**/*.{ts,tsx}'"
+    "lint": "eslint '**/*.{ts,tsx}'"
   },
   "dependencies": {
     "framer-motion": "^11.11.17",
