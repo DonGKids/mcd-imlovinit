@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 
 import recommendRouter from './routes/recommend';
 import catalogRouter from './routes/catalog';
-import storesRouter from './routes/stores';
+import { getTimeContext, mcpStatus } from './services/mcpTime';
 
 dotenv.config();
 
@@ -32,14 +32,18 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// 健康检查
+// 健康检查（含麦当劳 MCP 接入状态）
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'mcd-imlovinit-backend', time: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    service: 'mcd-imlovinit-backend',
+    time: new Date().toISOString(),
+    mcp: mcpStatus(),
+  });
 });
 
 app.use('/api/recommend', recommendRouter);
 app.use('/api/catalog', catalogRouter);
-app.use('/api/stores', storesRouter);
 
 // 全局错误处理
 app.use((err: any, _req: any, res: any, _next: any) => {
@@ -50,4 +54,15 @@ app.use((err: any, _req: any, res: any, _next: any) => {
 app.listen(PORT, () => {
   console.log(`[mcd-imlovinit] Backend listening on http://localhost:${PORT}`);
   console.log(`[mcd-imlovinit] Health check: http://localhost:${PORT}/api/health`);
+
+  // 启动时预热麦当劳 MCP 时间上下文（不阻塞服务就绪，失败自动降级）
+  const status = mcpStatus();
+  console.log(`[mcd-mcp] endpoint=${status.endpoint} token=${status.tokenConfigured ? 'configured' : 'missing'}`);
+  void getTimeContext().then((ctx) => {
+    if (ctx.source === 'mcd-mcp') {
+      console.log(`[mcd-mcp] ${ctx.tool} ok → ${ctx.formatted} (${ctx.timezone}), hour=${ctx.hour}`);
+    } else {
+      console.warn(`[mcd-mcp] ${ctx.tool} 降级为本机时间：${ctx.fallbackReason || 'unknown'}`);
+    }
+  });
 });

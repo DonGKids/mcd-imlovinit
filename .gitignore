@@ -9,5 +9,11 @@ build/
 .vite/
 *.tsbuildinfo
 
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
 # WorkBuddy memory (不进入 git)
 .workbuddy/

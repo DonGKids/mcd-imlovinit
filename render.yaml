@@ -14,4 +14,10 @@ services:
         value: 4000
       - key: FRONTEND_ORIGIN
         sync: false
+      # 麦当劳 MCP（运行时 now-time-info 时段校准）
+      - key: MCP_MCP_URL
+        value: https://mcp.mcd.cn
+      # 在 Render 控制台手动填入，不写入仓库
+      - key: MCD_MCP_TOKEN
+        sync: false
     autoDeploy: true

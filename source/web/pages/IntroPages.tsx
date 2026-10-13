@@ -77,7 +77,7 @@ export default function IntroPages() {
         <div className="absolute top-1/4 left-1/4 text-6xl opacity-10 select-none">🥤</div>
         <div className="relative text-center text-white space-y-6 max-w-3xl animate-fade-in">
           <div className="inline-block bg-white/20 backdrop-blur-sm px-5 py-2 rounded-full text-sm font-bold">
-            🍔 麦当劳创意开发大赛参赛作品
+            🍔 麦当劳程序员节创意开发大赛参赛作品
           </div>
           <h1 className="text-5xl sm:text-7xl font-black leading-none">
             懂你餐盘
@@ -87,7 +87,7 @@ export default function IntroPages() {
           </p>
           <p className="text-base sm:text-lg text-white/90 max-w-xl mx-auto pt-2">
             基于麦当劳官方营养数据<br />
-            从 160+ 道餐品中，为你精准匹配<br />
+            从 132 道餐品中，为你精准匹配<br />
             <span className="font-bold">今天最对味的那一款</span>
           </p>
         </div>
@@ -181,7 +181,7 @@ export default function IntroPages() {
           </div>
 
           <div className="text-center text-sm text-gray-500">
-            <p>💡 内置 30+ 中文情绪关键词 · 自动解析心情 + 口味 + 健康需求</p>
+            <p>💡 内置 26 个中文情绪关键词 · 自动解析心情 + 口味 + 健康需求</p>
           </div>
         </div>
       </section>
@@ -246,26 +246,12 @@ export default function IntroPages() {
             </button>
           </div>
           <p className="text-xs text-white/70 pt-4">
-            数据来源：麦当劳官方营养信息 · 160 道餐品 · 8 维标签库
+            数据来源：麦当劳官方营养信息 · 132 道餐品 · 8 维标签库
           </p>
         </div>
-        {/* 最后一页底部圆点导航：放在 footer 上方 */}
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-          {SECTIONS.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => scrollTo(i)}
-              aria-label={s.label}
-              className={`h-2 rounded-full transition-all ${
-                i === activeIndex ? 'bg-white w-8' : 'bg-white/40 w-2 hover:bg-white/60'
-              }`}
-            />
-          ))}
-        </div>
-
         {/* 第 5 屏专属 footer */}
         <div className="absolute bottom-0 left-0 right-0 bg-mcd-red text-white py-3 text-center text-xs sm:text-sm z-10">
-          <p>🥰 懂你餐盘 · 麦当劳智能餐品推荐 · Made with ❤️ for 麦当劳创意开发大赛</p>
+          <p>🥰 懂你餐盘 · 麦当劳智能餐品推荐 · Made with ❤️ for 麦当劳程序员节创意开发大赛</p>
           <p className="mt-0.5 text-white/80">数据来源：麦当劳官方营养信息</p>
         </div>
       </section>

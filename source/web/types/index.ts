@@ -84,8 +84,19 @@ export interface ScoredMeal {
   matchedDimensions: string[];
 }
 
+/** 后端通过麦当劳 MCP(now-time-info) 取回的时间上下文 */
+export interface McpTimeContext {
+  source: 'mcd-mcp' | 'local';
+  hour: number;
+  formatted: string;
+  timezone: string;
+  tool: string;
+  fallbackReason?: string;
+}
+
 export interface RecommendResponse {
   success: boolean;
   count: number;
   results: ScoredMeal[];
+  timeContext?: McpTimeContext;
 }

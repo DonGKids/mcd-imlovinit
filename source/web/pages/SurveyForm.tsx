@@ -29,33 +29,6 @@ export default function SurveyForm() {
   const [mealTime, setMealTime] = useState<MealTime>('auto');
   const [moodText, setMoodText] = useState('');
 
-  // 附近门店定位
-  const [address, setAddress] = useState('');
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [locating, setLocating] = useState(false);
-  const [locationMsg, setLocationMsg] = useState<string | null>(null);
-
-  function handleUseMyLocation() {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setLocationMsg('当前浏览器不支持定位，请手动输入地址');
-      return;
-    }
-    setLocating(true);
-    setLocationMsg(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocating(false);
-        setLocationMsg(`✅ 已获取定位（精度 ${Math.round(pos.coords.accuracy)}m）`);
-      },
-      (err) => {
-        setLocating(false);
-        setLocationMsg(`定位失败：${err.message || '用户拒绝或无信号'}，可手动输入地址`);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
-    );
-  }
-
   function handleRecommend() {
     navigate('/result', {
       state: {
@@ -66,9 +39,6 @@ export default function SurveyForm() {
         healthFocus,
         mealTime,
         moodText,
-        address: address.trim() || undefined,
-        lat: coords?.lat,
-        lng: coords?.lng,
       },
     });
   }
@@ -98,7 +68,7 @@ export default function SurveyForm() {
           回答几道小问题
         </h1>
         <p className="text-sm sm:text-base text-gray-600">
-          从 160+ 麦当劳餐品中，为你挑出今天最对味的那一款
+          从 132 道麦当劳餐品中，为你挑出今天最对味的那一款
         </p>
       </section>
 
@@ -150,52 +120,6 @@ export default function SurveyForm() {
               onChange={setMoodText}
               placeholder="比如：今天加班到深夜，想吃点治愈的、又不想太胖..."
             />
-
-            {/* 附近门店定位（可选） */}
-            <div className="space-y-3 pt-2 border-t border-dashed border-gray-200">
-              <div className="flex items-baseline justify-between flex-wrap gap-1">
-                <label className="text-sm sm:text-base font-semibold text-gray-800">
-                  7. 你在哪？（可选）
-                </label>
-                <span className="text-xs text-gray-500">推荐附近 3 家麦当劳</span>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="例如：北京市朝阳区三里屯 / 上海市南京东路"
-                  className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-mcd-red focus:outline-none text-sm bg-white"
-                />
-                <button
-                  type="button"
-                  onClick={handleUseMyLocation}
-                  disabled={locating}
-                  className="mcd-button-secondary whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {locating ? '📡 定位中…' : '📍 使用我的位置'}
-                </button>
-              </div>
-
-              {locationMsg && (
-                <p
-                  className={`text-xs ${locationMsg.startsWith('✅') ? 'text-green-600' : 'text-amber-600'}`}
-                >
-                  {locationMsg}
-                </p>
-              )}
-
-              {coords && (
-                <p className="text-xs text-gray-500">
-                  已记录坐标：{coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
-                </p>
-              )}
-
-              <p className="text-xs text-gray-400">
-                已覆盖 41 城：4 直辖市 + 27 省会 + 10 主要城市，也支持"帝都/魔都/羊城"等别名
-              </p>
-            </div>
           </div>
 
           {/* 按钮组 */}
@@ -217,64 +141,11 @@ export default function SurveyForm() {
           </p>
         </div>
 
-        {/* 右侧：侧栏（联名活动 + 今日语录） */}
+        {/* 右侧：侧栏 */}
         <aside className="lg:col-span-2 space-y-4 lg:sticky lg:top-4 lg:self-start">
-          <RecentCollabsCard />
           <DailyQuoteCard />
         </aside>
       </div>
-    </div>
-  );
-}
-
-/* ============================================================
- * 右侧侧栏：近期联名活动
- * ========================================================== */
-function RecentCollabsCard() {
-  const events = useMemo(
-    () => [
-      { emoji: '🚀', brand: '麦当劳 × 三体', desc: '宇宙级联名套餐', tag: '10月限定' },
-      { emoji: '🧸', brand: '麦当劳 × Line Friends', desc: '布朗熊开心乐园餐', tag: '进行中' },
-      { emoji: '🍌', brand: '麦当劳 × 小黄人', desc: '夏日酷爽香蕉冰淇淋', tag: '回顾' },
-      { emoji: '🐑', brand: '麦当劳 × 喜羊羊', desc: '童年回忆主题套餐', tag: '回顾' },
-    ],
-    [],
-  );
-
-  return (
-    <div className="mcd-card p-4 sm:p-5">
-      <h3 className="text-sm sm:text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
-        <span className="text-lg">🎉</span>近期联名活动
-      </h3>
-      <ul className="space-y-3">
-        {events.map((e, i) => (
-          <li key={i} className="flex items-start gap-3">
-            <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-mcd-yellow/30 flex items-center justify-center text-xl">
-              {e.emoji}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline justify-between gap-2">
-                <p className="text-sm font-semibold text-gray-800 truncate">
-                  {e.brand}
-                </p>
-                <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap ${
-                    e.tag === '进行中' || e.tag.includes('限定')
-                      ? 'bg-mcd-red text-white'
-                      : 'bg-gray-100 text-gray-500'
-                  }`}
-                >
-                  {e.tag}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 truncate">{e.desc}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-      <p className="text-[10px] text-gray-400 mt-3 text-center">
-        * 联名活动以麦当劳官方公告为准
-      </p>
     </div>
   );
 }

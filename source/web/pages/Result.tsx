@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { fetchRecommend, fetchNearbyStores, type NearbyStore } from '@/api/recommend';
+import { fetchRecommend } from '@/services/recommend';
 import MealCard from '@/components/MealCard';
 import type {
   AgeRange,
@@ -10,6 +10,7 @@ import type {
   HealthFocus,
   MealTime,
   ScoredMeal,
+  McpTimeContext,
 } from '@/types';
 
 interface LocationState {
@@ -20,9 +21,6 @@ interface LocationState {
   healthFocus: HealthFocus;
   mealTime: MealTime;
   moodText?: string;
-  address?: string;
-  lat?: number;
-  lng?: number;
 }
 
 export default function Result() {
@@ -33,12 +31,7 @@ export default function Result() {
   const [meals, setMeals] = useState<ScoredMeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // 附近门店
-  const [stores, setStores] = useState<NearbyStore[]>([]);
-  const [storeCity, setStoreCity] = useState<string | null>(null);
-  const [storeMessage, setStoreMessage] = useState<string | null>(null);
-  const [storesLoading, setStoresLoading] = useState(false);
+  const [timeContext, setTimeContext] = useState<McpTimeContext | null>(null);
 
   useEffect(() => {
     if (!state) {
@@ -60,9 +53,10 @@ export default function Result() {
       moodText: state.moodText,
       topN: 6,
     })
-      .then((results) => {
+      .then(({ results, timeContext: ctx }) => {
         if (cancelled) return;
         setMeals(results);
+        setTimeContext(ctx ?? null);
         setLoading(false);
       })
       .catch((err: Error) => {
@@ -75,51 +69,6 @@ export default function Result() {
       cancelled = true;
     };
   }, [state, navigate]);
-
-  // 单独请求附近门店
-  useEffect(() => {
-    if (!state || !state.address) {
-      setStores([]);
-      setStoreCity(null);
-      setStoreMessage(null);
-      return;
-    }
-    let cancelled = false;
-    setStoresLoading(true);
-    setStoreMessage(null);
-    fetchNearbyStores({
-      address: state.address,
-      lat: state.lat,
-      lng: state.lng,
-      limit: 3,
-    })
-      .then((resp) => {
-        if (cancelled) return;
-        if (resp.success && resp.stores.length > 0) {
-          setStores(resp.stores);
-          setStoreCity(resp.city);
-          setStoreMessage(null);
-        } else {
-          setStores([]);
-          setStoreCity(resp.city ?? null);
-          setStoreMessage(
-            resp.message ||
-              (resp.city
-                ? `${resp.city} 暂未收录门店数据`
-                : `暂未识别到该地址所在城市。已支持：${(resp.supportedCities || []).join('、')}`),
-          );
-        }
-        setStoresLoading(false);
-      })
-      .catch((err: Error) => {
-        if (cancelled) return;
-        setStoreMessage(`门店查询失败：${err.message}`);
-        setStoresLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [state]);
 
   if (!state) return null;
 
@@ -159,8 +108,16 @@ export default function Result() {
           )}
           {state.healthFocus !== 'none' && <p>💪 健康关注：{state.healthFocus}</p>}
           {state.mealTime !== 'auto' && <p>🕐 时段：{state.mealTime}</p>}
-          {state.address && (
-            <p>📍 位置：{state.address}</p>
+          {state.mealTime === 'auto' && timeContext && (
+            <p>
+              🕐 时段：
+              {timeContext.source === 'mcd-mcp'
+                ? '由麦当劳 MCP 自动校准'
+                : '按本机时间推断'}
+              <span className="text-gray-400">
+                （{timeContext.formatted} {timeContext.timezone}）
+              </span>
+            </p>
           )}
           {state.moodText && (
             <p className="italic bg-white rounded-lg p-2 mt-2 border-l-4 border-mcd-red">
@@ -182,7 +139,7 @@ export default function Result() {
           <p className="font-semibold">⚠️ 推荐失败</p>
           <p className="text-sm mt-2">{error}</p>
           <p className="text-xs mt-2 text-gray-500">
-            请确认后端服务已启动：<code>cd backend && npm run dev</code>
+            请确认后端服务已启动：<code>python main.py</code>
           </p>
         </div>
       )}
@@ -202,83 +159,13 @@ export default function Result() {
       )}
 
       {!loading && !error && meals.length > 0 && (
-        <section className="text-center text-sm text-gray-500 pt-4">
+        <section className="text-center text-sm text-gray-500 pt-4 space-y-2">
           <p>
             💡 以上推荐基于麦当劳官方营养信息 + 6 维加权算法，可在小程序内一键加购
           </p>
-        </section>
-      )}
-
-      {/* 附近门店 */}
-      {(state.address || storesLoading) && (
-        <section className="space-y-3 pt-2">
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-              📍 附近门店
-            </h2>
-            {storeCity && (
-              <span className="text-xs text-gray-500">
-                {storeCity} · 距你最近的 3 家
-              </span>
-            )}
-          </div>
-
-          {storesLoading && (
-            <div className="mcd-card p-6 text-center text-gray-500">
-              <div className="text-3xl animate-pulse-slow">🏃</div>
-              <p className="text-sm mt-2">正在查找附近麦当劳…</p>
-            </div>
-          )}
-
-          {!storesLoading && storeMessage && (
-            <div className="mcd-card p-4 text-sm text-amber-700 bg-amber-50">
-              {storeMessage}
-            </div>
-          )}
-
-          {!storesLoading && stores.length > 0 && (
-            <div className="space-y-3">
-              {stores.map((s, idx) => (
-                <div
-                  key={s.id}
-                  className="mcd-card p-4 sm:p-5 flex items-start gap-3"
-                >
-                  <div
-                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                      idx === 0
-                        ? 'bg-mcd-red'
-                        : idx === 1
-                        ? 'bg-orange-500'
-                        : 'bg-amber-500'
-                    }`}
-                  >
-                    {idx + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline justify-between gap-2 flex-wrap">
-                      <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">
-                        {s.name}
-                      </h3>
-                      <span className="text-xs text-mcd-red font-semibold whitespace-nowrap">
-                        {s.distance} km
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1 truncate">
-                      {s.address}
-                    </p>
-                    <div className="flex gap-3 mt-2 text-xs text-gray-500">
-                      <span>🚶 步行约 {s.walkMinutes} 分钟</span>
-                      <span>🚗 驾车约 {s.driveMinutes} 分钟</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!storesLoading && stores.length > 0 && (
-            <p className="text-xs text-gray-400 text-center pt-1">
-              距离为直线估算，实际路线请以导航为准
+          {timeContext?.source === 'mcd-mcp' && (
+            <p className="text-xs text-gray-400">
+              🔌 已通过麦当劳 MCP · {timeContext.tool} 校准用餐时段
             </p>
           )}
         </section>

@@ -2,29 +2,34 @@
 
 > **懂你的胃，更懂你的心** —— 基于麦当劳官方营养数据的 6 维加权推荐算法
 
-参赛作品 | 麦当劳创意开发大赛
+参赛作品 | 麦当劳程序员节创意开发大赛
 
 🔗 **GitHub**: https://github.com/DonGKids/mcd-imlovinit
 🚀 **Live Demo**: 部署到 Vercel/Render 后回填链接（见"部署指南"章节）
-📖 **MCP 使用说明**: 详见 [`MCP_USAGE.md`](MCP_USAGE.md)
+📖 **MCP 集成说明**: 详见 [`MCP_INTEGRATION.md`](MCP_INTEGRATION.md)
+📄 **参赛声明**: 详见 [`CONTEST_DECLARATION.md`](CONTEST_DECLARATION.md)
 
 ---
 
 ## 📖 项目介绍
 
-**懂你餐盘** 是为麦当劳创意开发大赛设计的智能餐品推荐 Web 应用。它从麦当劳官方营养数据出发，结合用户的多维画像（年龄段、职业、口味、心情、健康关注、用餐时段），用 **6 维加权打分算法** 为你从 160+ 道餐品中挑选最匹配的 Top 6。
+**懂你餐盘** 是为麦当劳程序员节创意开发大赛设计的智能餐品推荐 Web 应用。用户只需回答 6 个维度的画像问题（年龄段、职业、口味、心情、健康关注、用餐时段），系统即用 **6 维加权打分算法** 从 **132 道**麦当劳餐品中挑出最匹配的 Top 6，并逐条给出推荐理由。
 
 核心特色：
 
-- 🧠 **6 维加权推荐算法**：年龄段 + 职业 + 口味 + 心情 + 健康 + 时段
-- 💬 **自由文本心情解析**：用自然语言说出你的心情（"被甲方折磨了"、"加班到深夜"），系统自动理解并匹配餐品
-- 🏷️ **8 维标签系统**：每个餐品被打上 类别/餐期/口味/年龄适配/职业适配/营养属性/心情适配/主料 8 个维度
-- ✅ **解释性推荐**：每条推荐都告诉你**为什么**——不只是冷冰冰的分数
-- 📍 **附近门店推荐**：可选输入地址 / 一键定位，给出距离最近的 3 家麦当劳 + 步行/驾车时长
-- 🎨 **品牌化 UI**：麦当劳红黄配色，响应式设计，支持手机/平板/桌面
+- 🧠 **6 维加权推荐算法**：年龄段(≤25) / 职业(≤18) / 口味(≤20) / 心情(≤24) / 健康(≤25) / 时段(≤12) 六个维度独立打分后累加排序
+- 💬 **自然语言心情解析**：直接输入"被甲方折磨了""加班到深夜"，内置 **26 个**中文情绪关键词，自动映射到心情 / 口味 / 营养标签
+- 🏷️ **8 维标签体系**：每道餐品标注 类别 / 餐期 / 口味 / 年龄适配 / 职业适配 / 营养属性 / 心情适配 / 主料
+- ✅ **解释性推荐**：每条推荐附带 2–6 条「为什么」，不做算法黑盒
+- 🔀 **多样性约束**：每个品类最多出 2 款，避免 Top 6 全是汉堡或全是饮料
+- 🛡️ **特殊群体软约束**：老年 / 孕妇 / 儿童 自动加权低钠餐品（钠 < 500mg）；健身人群加权高蛋白低脂餐品（蛋白 ≥ 20g 且脂肪 ≤ 15g）
+- 🎨 **品牌化 UI**：麦当劳红黄配色，5 屏滚动介绍页 → 问卷 → 结果页，移动端 / 桌面端自适应
 
-数据来源：麦当劳官方营养信息表（通过 `mcp__mcd-mcp__list-nutrition-foods` MCP 接口获取）。
-标签系统由开发者基于公开菜单资料手工整理。
+**数据来源**：餐品营养数据经麦当劳官方 MCP 工具 `mcp__mcd-mcp__list-nutrition-foods` 在**开发阶段**一次性拉取，落地为本地 JSON（`source/data/`）；8 维标签体系由开发者基于公开菜单资料整理。数据在启动时一次性载入内存，主推荐链路不依赖外部接口。
+
+**麦当劳 MCP 接入**：
+- **开发阶段**：`mcp__mcd-mcp__list-nutrition-foods` 拉取全部餐品营养数据
+- **运行时**：用户选择「自动判断时段」时，后端通过 MCP Streamable HTTP 直连 `https://mcp.mcd.cn` 调用 `mcp__mcd-mcp__now-time-info`，取回北京时间校准用餐时段（缓存 5 分钟 / 超时 4 秒 / 失败自动降级本机时间，绝不阻断推荐）
 
 ---
 
@@ -40,7 +45,6 @@
 | 🤰 **孕妈** | 营养补充、清淡 | 自动适配清淡 + 高钙 + 低钠（粥、豆浆、热牛奶） |
 | 👴 **退休人士** | 养胃、清淡、低负担 | 自动过滤到低钠、高钙、易消化组合 |
 | 👶 **儿童** | 零食、甜品 | 儿童专属筛选（鱼排堡、迷你薯条、新地） |
-| 🚶 **临时到访者 / 商务出差** | 不知道附近哪家最近 | 输入当前位置，一键给出 3 家最近门店 + 步行/驾车时长 |
 
 ---
 
@@ -49,26 +53,41 @@
 ### 前置环境
 - **Node.js** >= 18（推荐 22.x）
 - **npm** >= 9
+- **Python** >= 3.8（仅当使用 `main.py` 一键启动时需要）
 
-### 1. 克隆仓库
+### ⚡ 一键启动（推荐）
+
+仓库根目录提供了统一入口 `main.py`，一条命令同时拉起前端 + 后端，并自动安装缺失依赖：
+
 ```bash
 git clone https://github.com/DonGKids/mcd-imlovinit.git
 cd mcd-imlovinit
+python main.py
 ```
 
-### 2. 安装后端依赖
+然后浏览器打开 **http://localhost:5173** 即可。按 `Ctrl+C` 同时停止两个服务。
+
+可选参数：
 ```bash
+python main.py --no-install      # 跳过依赖检查/安装
+python main.py --backend-only    # 只启动后端 (4000)
+python main.py --frontend-only   # 只启动前端 (5173)
+python main.py --port 8080       # 指定后端端口
+```
+
+### 手动启动（两个终端）
+
+若不使用 `main.py`，也可以手动分别启动：
+
+```bash
+# 1. 安装后端依赖
 cd source/server
 npm install
-```
 
-### 3. 安装前端依赖
-```bash
+# 2. 安装前端依赖
 cd ../web
 npm install
 ```
-
-### 4. 启动开发模式
 
 打开两个终端：
 
@@ -84,7 +103,7 @@ npm run dev
 
 打开浏览器访问 **http://localhost:5173** 即可体验。
 
-### 5. 生产构建
+### 生产构建
 
 ```bash
 # 后端
@@ -170,37 +189,7 @@ curl -X POST http://localhost:4000/api/recommend \
   }'
 ```
 
-返回结构详见 `MCP_USAGE.md` 中的"完整 API 契约"。
-
-### 示例 6：附近门店推荐
-
-**操作**：在问卷第 7 题"你在哪？"输入地址（支持城市名 + 城市别名 + 地标关键词）：
-- `"北京三里屯"` / `"帝都三里屯"` / `"北京市朝阳区三里屯"`
-- `"上海徐家汇"` / `"魔都外滩"`
-- `"广州天河"` / `"羊城天河城"`
-- `"西安钟楼"` / `"长安回民街"`
-- 或点击"📍 使用我的位置"调用浏览器定位（精度优先）
-
-**算法**：用户输入 / 城市别名 → 解析城市 → 综合"名称/地标匹配分 + 距离"排序 → 返回前 3 家
-
-**API 调用**：
-```bash
-# 直接用城市名
-curl -X POST http://localhost:4000/api/stores/nearby \
-  -H "Content-Type: application/json" \
-  -d '{ "address": "北京三里屯", "limit": 3 }'
-
-# 用城市别名
-curl -X POST http://localhost:4000/api/stores/nearby \
-  -H "Content-Type: application/json" \
-  -d '{ "address": "魔都外滩", "limit": 3 }'
-
-# 用浏览器定位坐标
-curl -X POST http://localhost:4000/api/stores/nearby \
-  -H "Content-Type: application/json" \
-  -d '{ "address": "上海", "lat": 31.2400, "lng": 121.4900, "limit": 3 }'
-```
-```
+返回结构详见 `MCP_INTEGRATION.md` 中的"完整 API 契约"。
 
 ---
 
@@ -208,19 +197,23 @@ curl -X POST http://localhost:4000/api/stores/nearby \
 
 ```
 mcd-imlovinit/
-├── README.md            ← 你正在看：项目介绍 + 安装 + 使用示例 + 目标用户
-├── MCP_USAGE.md         ← 麦当劳 MCP Server/Tool/调用流程/业务价值
-└── source/              ← 源代码（之后的测试和修改全都在这里）
-    ├── server/          ← Node.js + Express + TypeScript 后端
+├── README.md                ← 你正在看：项目介绍 + 安装 + 使用示例 + 目标用户
+├── MCP_INTEGRATION.md       ← 麦当劳 MCP Server/Tool/调用流程/业务价值
+├── CONTEST_DECLARATION.md   ← 参赛声明（官方原件，原创性 + 合规 + 信息安全）
+├── mcp-config.example.json  ← 脱敏后的 MCP 配置示例（仅环境变量占位符）
+├── workbuddy.md             ← WorkBuddy 开发上下文（WorkBuddy 专项奖励核验材料）
+├── main.py                  ← ⚡ 一键启动入口（同时拉起前后端）
+├── render.yaml              ← Render 部署 IaC
+└── source/                  ← 源代码（之后的测试和修改全都在这里）
+    ├── server/              ← Node.js + Express + TypeScript 后端
     │   ├── server.ts           入口
     │   ├── routes/
     │   │   ├── recommend.ts    POST /api/recommend
-    │   │   ├── catalog.ts      GET  /api/catalog
-    │   │   └── stores.ts       POST /api/stores/nearby 附近门店
+    │   │   └── catalog.ts      GET  /api/catalog
     │   ├── services/
     │   │   ├── recommend.ts    6 维加权推荐算法核心
-    │   │   ├── catalog.ts      餐品目录加载 (含 data 路径解析)
-    │   │   └── stores.ts       门店匹配 + Haversine 距离计算
+    │   │   ├── catalog.ts      餐品目录加载 (含 data 路径解析 + 去重)
+    │   │   └── mcpTime.ts      ⭐ 麦当劳 MCP 运行时调用 (now-time-info)
     │   ├── utils/
     │   │   └── tagMaps.ts      口味/心情/职业关键词映射表
     │   ├── types/
@@ -228,17 +221,17 @@ mcd-imlovinit/
     │   ├── package.json
     │   ├── tsconfig.json
     │   └── vercel.json         Vercel serverless 部署配置
-    ├── web/             ← Vite + React 18 + TS + Tailwind 前端
+    ├── web/                 ← Vite + React 18 + TS + Tailwind 前端
     │   ├── main.tsx            入口
-    │   ├── App.tsx             路由 (Home → Survey → Result)
+    │   ├── App.tsx             路由 (IntroPages → SurveyForm → Result)
     │   ├── pages/
-    │   │   ├── Home.tsx        5 屏 scroll-snap 介绍页
-    │   │   ├── SurveyForm.tsx  6 维问卷 + 地址输入 + 浏览器定位
-    │   │   └── Result.tsx      推荐结果 + 附近门店展示
+    │   │   ├── IntroPages.tsx  5 屏 scroll-snap 介绍页
+    │   │   ├── SurveyForm.tsx  6 维问卷 + 心情自由输入
+    │   │   └── Result.tsx      推荐结果展示
     │   ├── components/
     │   │   ├── OptionPills.tsx 选项胶囊 + 自由文本输入
     │   │   └── MealCard.tsx    餐品卡片 (营养+标签+理由)
-    │   ├── api/recommend.ts    后端 API 封装 (推荐 + 附近门店)
+    │   ├── services/recommend.ts  后端 API 封装
     │   ├── utils/options.ts    所有维度的选项定义
     │   ├── types/index.ts
     │   ├── styles/index.css    Tailwind + 全局样式
@@ -249,14 +242,12 @@ mcd-imlovinit/
     │   ├── tsconfig.json
     │   ├── vite.config.ts      含 /api 代理到后端
     │   └── vercel.json
-    └── data/            ← 营养数据 + 标签数据 + 门店数据 (JSON)
-        ├── meals-nutrition.json    160 道餐品的卡路里/蛋白/脂肪/碳水/钠/钙
-        ├── meals-tags.json         160 道餐品的 8 维标签
-        └── stores.json             41 城 106 家麦当劳虚拟门店 + 城市中心坐标 + 50 个城市别名
+    └── data/            ← 营养数据 + 标签数据 (JSON)
+        ├── meals-nutrition.json    152 条餐品营养记录 (卡路里/蛋白/脂肪/碳水/钠/钙)
+        └── meals-tags.json         133 道餐品的 8 维标签（与营养表取交集后，132 道参与推荐）
 ```
 
 辅助文件（不在 `source/` 内）：
-- `scripts/generate_stores.py` — 一次性脚本：生成/重新生成 `source/data/stores.json` 的全国门店数据
 - `.gitignore`
 - `.github/workflows/ci.yml` — CI：构建后端 + 集成测试 + 构建前端
 - `render.yaml` — Render 部署 IaC 配置
@@ -265,7 +256,7 @@ mcd-imlovinit/
 
 ## 🧠 算法说明（简版）
 
-详见 `MCP_USAGE.md` 的"业务价值"章节和源码注释。
+详见 `MCP_INTEGRATION.md` 的"业务价值"章节和源码注释。
 
 **核心思想**：每个维度独立计算得分，最终总分 = 各维度得分之和。餐品按总分降序排列，再加多样性约束后取 Top N。
 
@@ -289,7 +280,8 @@ mcd-imlovinit/
 - `cors` 限定前端来源（白名单模式）
 - `express-rate-limit` 每分钟 60 次限流
 - 请求体大小限制 1MB
-- 启动时一次性加载 JSON 缓存，零外部依赖
+- 启动时一次性加载 JSON 缓存，主推荐链路不依赖外部接口
+- 麦当劳 MCP 调用带 **4 秒超时 + 5 分钟缓存 + 失败自动降级**，不会因外部依赖拖垮服务
 
 ---
 
@@ -309,6 +301,8 @@ mcd-imlovinit/
    - `PORT=4000`
    - `FRONTEND_ORIGIN=https://your-frontend.vercel.app`
    - `NODE_ENV=production`
+   - `MCP_MCP_URL=https://mcp.mcd.cn`（可选，默认值即此）
+   - `MCD_MCP_TOKEN=<你的麦当劳 MCP Token>`（可选，不填则时段校准降级为本机时间）
 
 `render.yaml` 已包含这些配置，可直接用 Infrastructure as Code 部署。
 
@@ -389,60 +383,23 @@ mcd-imlovinit/
       ],
       "matchedDimensions": ["ageFit", "occupationFit", "flavor", "mood", "health"]
     }
-  ]
+  ],
+  "timeContext": {
+    "source": "mcd-mcp",                    // mcd-mcp = 麦当劳 MCP 实时返回；local = 降级本机时间
+    "hour": 13,
+    "formatted": "2026-10-13 13:27:27",
+    "timezone": "GMT+08:00",
+    "tool": "now-time-info"                 // 仅当 mealTime=auto 时返回
+  }
 }
 ```
 
 ### 其他端点
 
-- `GET /api/catalog` — 全量餐品目录（营养 + 标签）
-- `GET /api/meals` — 仅营养数据
-- `GET /api/tags` — 仅标签字典
-- `GET /api/health` — 健康检查
-- `POST /api/stores/nearby` — 附近门店推荐
-
-### `POST /api/stores/nearby`
-
-**Request**:
-```json
-{
-  "address": "北京市朝阳区三里屯",   // 必填: 任意含城市关键词的地址
-  "lat": 39.9388,                    // 可选: 浏览器定位坐标
-  "lng": 116.4554,                   // 可选: 浏览器定位坐标
-  "limit": 3                         // 可选: 返回门店数量, 默认 3
-}
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "city": "北京",
-  "stores": [
-    {
-      "id": "BJ001",
-      "name": "麦当劳王府井大街店",
-      "address": "北京市东城区王府井大街138号",
-      "lat": 39.9139,
-      "lng": 116.4106,
-      "city": "北京",
-      "distance": 1.1,
-      "walkMinutes": 13,
-      "driveMinutes": 2
-    }
-  ]
-}
-```
-
-**算法**：地址关键词匹配城市 → 列出该城市所有门店 → 用 Haversine 公式计算直线距离（地球半径 6371 km）→ 步行 5 km/h、驾车 30 km/h 估算时长 → 综合"名称/地标关键词匹配分 + 距离"排序取前 N。
-
-**已支持范围**：**41 城 106 家虚拟门店**
-- 4 个直辖市：北京 / 上海 / 天津 / 重庆
-- 27 个省会/首府：石家庄、太原、呼和浩特、沈阳、长春、哈尔滨、南京、杭州、合肥、福州、南昌、济南、郑州、武汉、长沙、广州、南宁、海口、成都、贵阳、昆明、拉萨、西安、兰州、西宁、银川、乌鲁木齐
-- 10 个主要城市：深圳、苏州、青岛、大连、宁波、厦门、无锡、佛山、东莞、温州
-- 支持 50+ 城市别名（"帝都"→北京、"魔都"→上海、"羊城"→广州、"鹏城"→深圳、"蓉城"→成都、"冰城"→哈尔滨、"春城"→昆明/长春 等）
-
----
+- `GET /api/catalog/catalog` — **可推荐餐品池**（营养 + 标签交集，去重后 **132 道**）
+- `GET /api/catalog/meals` — 仅营养数据（MCP 原始返回 **152 条**）
+- `GET /api/catalog/tags` — 仅标签字典（135 个键，其中 2 个为 `_comment` / `_schema` 元数据）
+- `GET /api/health` — 健康检查（含麦当劳 MCP 接入状态 `mcp.reachable`）
 
 ## 🛠️ 开发与调试
 
@@ -478,7 +435,7 @@ MIT License
 ## 🙌 致谢
 
 - 麦当劳 MCP 团队提供的开放接口
-- 麦当劳创意开发大赛主办方
+- 麦当劳程序员节创意开发大赛主办方
 - React / Tailwind / Express / Vite 社区
 
 **Made with ❤️ for McDonald's Creative Dev Contest**

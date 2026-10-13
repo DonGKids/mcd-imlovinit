@@ -1,7 +1,7 @@
 {
   "name": "mcd-imlovinit-frontend",
   "version": "1.0.0",
-  "description": "麦当劳MCP智能推荐前端 - 麦当劳创意开发大赛参赛项目",
+  "description": "麦当劳MCP智能推荐前端 - 麦当劳程序员节创意开发大赛参赛项目",
   "type": "module",
   "scripts": {
     "dev": "vite",

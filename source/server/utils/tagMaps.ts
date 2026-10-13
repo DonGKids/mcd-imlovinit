@@ -118,7 +118,7 @@ export function parseMoodText(text: string): { matchedMoodFit: string[]; matched
           matchedMoodFit.add(t);
         }
         if (FLAVOR_TO_TAGS[t]) {
-          matchedFlavor.add(...FLAVOR_TO_TAGS[t]);
+          FLAVOR_TO_TAGS[t].forEach((f) => matchedFlavor.add(f));
         }
       });
     }

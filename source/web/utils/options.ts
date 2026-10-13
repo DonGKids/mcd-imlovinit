@@ -7,13 +7,13 @@ import type {
   MealTime,
 } from '@/types';
 
-export interface OptionItem {
-  value: string;
+export interface OptionItem<T extends string = string> {
+  value: T;
   label: string;
   emoji: string;
 }
 
-export const AGE_OPTIONS: OptionItem[] = [
+export const AGE_OPTIONS: OptionItem<AgeRange>[] = [
   { value: 'kid', label: '儿童 (<12岁)', emoji: '🧒' },
   { value: 'teen', label: '青少年 (12-18)', emoji: '🧑‍🎓' },
   { value: 'young', label: '青年 (18-30)', emoji: '👨‍💻' },
@@ -21,7 +21,7 @@ export const AGE_OPTIONS: OptionItem[] = [
   { value: 'senior', label: '老年 (50+)', emoji: '👵' },
 ];
 
-export const OCCUPATION_OPTIONS: OptionItem[] = [
+export const OCCUPATION_OPTIONS: OptionItem<Occupation>[] = [
   { value: 'student', label: '学生', emoji: '📚' },
   { value: 'programmer', label: '程序员 / 工程师', emoji: '💻' },
   { value: 'officeWorker', label: '白领 / 文职', emoji: '👔' },
@@ -31,7 +31,7 @@ export const OCCUPATION_OPTIONS: OptionItem[] = [
   { value: 'elderly', label: '退休人士', emoji: '🌳' },
 ];
 
-export const FLAVOR_OPTIONS: OptionItem[] = [
+export const FLAVOR_OPTIONS: OptionItem<FlavorPref>[] = [
   { value: 'sweet', label: '甜', emoji: '🍯' },
   { value: 'salty', label: '咸', emoji: '🧂' },
   { value: 'spicy', label: '辣', emoji: '🌶️' },
@@ -49,7 +49,7 @@ export const FLAVOR_OPTIONS: OptionItem[] = [
   { value: 'smoky', label: '烟熏', emoji: '🥓' },
 ];
 
-export const MOOD_OPTIONS: OptionItem[] = [
+export const MOOD_OPTIONS: OptionItem<Mood>[] = [
   { value: 'happy', label: '开心', emoji: '😊' },
   { value: 'tired', label: '疲惫', emoji: '😴' },
   { value: 'stressed', label: '焦虑', emoji: '😣' },
@@ -65,7 +65,7 @@ export const MOOD_OPTIONS: OptionItem[] = [
   { value: 'coolDown', label: '想降温', emoji: '❄️' },
 ];
 
-export const HEALTH_OPTIONS: OptionItem[] = [
+export const HEALTH_OPTIONS: OptionItem<HealthFocus>[] = [
   { value: 'none', label: '无特殊', emoji: '✖️' },
   { value: 'lowCal', label: '控卡', emoji: '🥬' },
   { value: 'highProtein', label: '高蛋白', emoji: '🥩' },
@@ -76,7 +76,7 @@ export const HEALTH_OPTIONS: OptionItem[] = [
   { value: 'caffeinated', label: '要含咖啡因', emoji: '☕' },
 ];
 
-export const MEAL_TIME_OPTIONS: OptionItem[] = [
+export const MEAL_TIME_OPTIONS: OptionItem<MealTime>[] = [
   { value: 'auto', label: '自动（按当前时间）', emoji: '🕐' },
   { value: 'breakfast', label: '早餐', emoji: '🌅' },
   { value: 'lunch', label: '午餐', emoji: '🌞' },

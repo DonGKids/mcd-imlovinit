@@ -16,7 +16,7 @@ function App() {
         </Routes>
       </main>
       <footer className="bg-mcd-red text-white py-4 text-center text-xs sm:text-sm flex-shrink-0 z-10">
-        <p>🥰 懂你餐盘 · 麦当劳智能餐品推荐 · Made with ❤️ for 麦当劳创意开发大赛</p>
+        <p>🥰 懂你餐盘 · 麦当劳智能餐品推荐 · Made with ❤️ for 麦当劳程序员节创意开发大赛</p>
         <p className="mt-1 text-white/80">数据来源：麦当劳官方营养信息</p>
       </footer>
     </div>
