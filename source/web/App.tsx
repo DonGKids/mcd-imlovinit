@@ -1,15 +1,17 @@
 import { Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
+import IntroPages from './pages/IntroPages';
+import SurveyForm from './pages/SurveyForm';
 import Result from './pages/Result';
 import Header from './components/Header';
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-mcd-cream">
       <Header />
       <main className="flex-1">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<IntroPages />} />
+          <Route path="/survey" element={<SurveyForm />} />
           <Route path="/result" element={<Result />} />
         </Routes>
       </main>

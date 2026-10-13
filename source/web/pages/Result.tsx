@@ -72,7 +72,7 @@ export default function Result() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12 space-y-6">
       <section className="flex items-center justify-between flex-wrap gap-3">
-        <Link to="/" className="text-mcd-red hover:underline text-sm flex items-center gap-1">
+        <Link to="/survey" className="text-mcd-red hover:underline text-sm flex items-center gap-1">
           ← 返回修改
         </Link>
         <button

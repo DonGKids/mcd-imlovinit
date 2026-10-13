@@ -18,7 +18,7 @@ import type {
   MealTime,
 } from '@/types';
 
-export default function Home() {
+export default function SurveyForm() {
   const navigate = useNavigate();
 
   const [ageRange, setAgeRange] = useState<AgeRange>('young');
@@ -60,17 +60,14 @@ export default function Home() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12 space-y-10">
       <section className="text-center space-y-3">
-        <div className="inline-block gradient-hero text-white px-5 py-2 rounded-full text-sm font-bold shadow-md">
-          🍔 麦当劳创意开发大赛参赛作品
+        <div className="inline-block bg-mcd-yellow text-mcd-brown px-5 py-2 rounded-full text-sm font-bold shadow-md">
+          ✏️ 告诉我一些关于你的事
         </div>
-        <h1 className="text-3xl sm:text-5xl font-bold text-gray-900 leading-tight">
-          懂你的胃
-          <span className="text-mcd-red">,</span>
-          <br className="sm:hidden" />
-          更懂你的心
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+          回答几道小问题
         </h1>
         <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto">
-          回答几道小问题，让我们从 160+ 麦当劳餐品中
+          从 160+ 麦当劳餐品中
           <br className="hidden sm:block" />
           为你挑出今天最对味的那一款
         </p>
