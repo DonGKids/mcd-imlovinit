@@ -67,7 +67,7 @@ export default function IntroPages() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 w-full overflow-y-scroll snap-y snap-mandatory bg-mcd-cream z-0"
+      className="fixed inset-0 w-full overflow-y-scroll snap-y snap-mandatory bg-mcd-cream z-20"
     >
       {/* Section 1: Hero */}
       <section className="h-screen w-full snap-start flex items-center justify-center px-6 relative overflow-hidden">
@@ -91,7 +91,11 @@ export default function IntroPages() {
             <span className="font-bold">今天最对味的那一款</span>
           </p>
         </div>
-        <ScrollHint activeIndex={activeIndex} total={SECTIONS.length} index={0} />
+        {/* 向下滚动提示（仅第 1 页显示） */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 animate-bounce z-10 flex flex-col items-center">
+          <div className="text-xs mb-1">向下滚动</div>
+          <div className="text-2xl">↓</div>
+        </div>
       </section>
 
       {/* Section 2: 核心特性 */}
@@ -126,7 +130,6 @@ export default function IntroPages() {
             ))}
           </div>
         </div>
-        <ScrollHint activeIndex={activeIndex} total={SECTIONS.length} index={1} />
       </section>
 
       {/* Section 3: 智能理解 */}
@@ -181,7 +184,6 @@ export default function IntroPages() {
             <p>💡 内置 30+ 中文情绪关键词 · 自动解析心情 + 口味 + 健康需求</p>
           </div>
         </div>
-        <ScrollHint activeIndex={activeIndex} total={SECTIONS.length} index={2} />
       </section>
 
       {/* Section 4: 目标用户 */}
@@ -218,7 +220,6 @@ export default function IntroPages() {
             ))}
           </div>
         </div>
-        <ScrollHint activeIndex={activeIndex} total={SECTIONS.length} index={3} />
       </section>
 
       {/* Section 5: 开始使用 */}
@@ -248,8 +249,8 @@ export default function IntroPages() {
             数据来源：麦当劳官方营养信息 · 160 道餐品 · 8 维标签库
           </p>
         </div>
-        {/* 最后一页不显示 ScrollHint，改为结束标识 */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+        {/* 最后一页底部圆点导航：放在 footer 上方 */}
+        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 z-10">
           {SECTIONS.map((s, i) => (
             <button
               key={s.id}
@@ -261,41 +262,13 @@ export default function IntroPages() {
             />
           ))}
         </div>
+
+        {/* 第 5 屏专属 footer */}
+        <div className="absolute bottom-0 left-0 right-0 bg-mcd-red text-white py-3 text-center text-xs sm:text-sm z-10">
+          <p>🥰 懂你餐盘 · 麦当劳智能餐品推荐 · Made with ❤️ for 麦当劳创意开发大赛</p>
+          <p className="mt-0.5 text-white/80">数据来源：麦当劳官方营养信息</p>
+        </div>
       </section>
     </div>
-  );
-}
-
-interface ScrollHintProps {
-  activeIndex: number;
-  total: number;
-  index: number;
-}
-
-function ScrollHint({ activeIndex, total, index }: ScrollHintProps) {
-  return (
-    <>
-      {/* 右侧/底部 滚动指示点 */}
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex flex-col gap-2 z-10">
-        {Array.from({ length: total }).map((_, i) => (
-          <div
-            key={i}
-            className={`h-2 rounded-full transition-all ${
-              i === activeIndex
-                ? 'bg-mcd-red w-2 h-8'
-                : 'bg-gray-300 w-2'
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* 向下滚动提示（仅在不是最后页时显示） */}
-      {index < total - 1 && index === activeIndex && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-gray-400 animate-bounce z-10">
-          <div className="text-xs text-center mb-1">向下滚动</div>
-          <div className="text-2xl">↓</div>
-        </div>
-      )}
-    </>
   );
 }

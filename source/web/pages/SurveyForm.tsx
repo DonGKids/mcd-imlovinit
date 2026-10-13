@@ -280,7 +280,7 @@ function RecentCollabsCard() {
 }
 
 /* ============================================================
- * 右侧侧栏：今日语录
+ * 右侧侧栏：今日语录（每次进页面随机 + 可手动刷新）
  * ========================================================== */
 function DailyQuoteCard() {
   const quotes = useMemo(
@@ -292,23 +292,60 @@ function DailyQuoteCard() {
       { text: '芝士就是力量，巨无霸就是信仰。', author: '懂你餐盘' },
       { text: '每一口都是对生活的小小犒赏。', author: '懂你餐盘' },
       { text: '今天也要好好吃饭，这是最低成本的快乐。', author: '懂你餐盘' },
+      { text: '咖啡因 + 阳光 = 一整天的好心情。', author: '懂你餐盘' },
+      { text: '减脂不可怕，可怕的是减掉了笑容。', author: '懂你餐盘' },
+      { text: '加班到深夜，记得奖励自己一份宵夜。', author: '懂你餐盘' },
     ],
     [],
   );
 
-  // 按日期选 quote，每天固定一条
-  const today = new Date();
-  const dayOfYear = Math.floor(
-    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000,
-  );
-  const quote = quotes[dayOfYear % quotes.length];
+  // 每次组件挂载时随机挑一条
+  const [index, setIndex] = useState(() => Math.floor(Math.random() * quotes.length));
+
+  // 刷新：换一条，且避免和当前重复
+  const handleRefresh = () => {
+    if (quotes.length <= 1) return;
+    let next = Math.floor(Math.random() * quotes.length);
+    while (next === index) {
+      next = Math.floor(Math.random() * quotes.length);
+    }
+    setIndex(next);
+  };
+
+  const quote = quotes[index];
 
   return (
     <div className="mcd-card p-4 sm:p-5 bg-gradient-to-br from-mcd-yellow/30 via-white to-mcd-red/10">
-      <h3 className="text-sm sm:text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
-        <span className="text-lg">💭</span>今日语录
-      </h3>
-      <blockquote className="text-base sm:text-lg text-gray-800 leading-relaxed font-medium">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm sm:text-base font-bold text-gray-800 flex items-center gap-2">
+          <span className="text-lg">💭</span>今日语录
+        </h3>
+        <button
+          type="button"
+          onClick={handleRefresh}
+          aria-label="换一条语录"
+          title="换一条"
+          className="text-gray-400 hover:text-mcd-red transition-all p-1.5 rounded-full hover:bg-white/60 active:scale-90"
+        >
+          {/* 旋转刷新图标 */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+        </button>
+      </div>
+      <blockquote className="text-base sm:text-lg text-gray-800 leading-relaxed font-medium transition-opacity duration-300" key={index}>
         "{quote.text}"
       </blockquote>
       <p className="text-xs text-gray-500 mt-3 text-right">— {quote.author}</p>
